@@ -1,9 +1,6 @@
-name: Unity Build APK
+name: Build APK
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -11,27 +8,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3.5.3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3.10.0
-        with:
-          distribution: temurin
-          java-version: 11
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-      - name: Run Unity build
-        run: |
-          echo "Starting Unity build..."
-          # Replace this path with the Unity executable location on the runner if needed
-          /path/to/Unity -quit -batchmode -projectPath ${{ github.workspace }} -executeMethod BuildScript.PerformAndroidBuild
-          echo "Build finished."
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
 
-      - name: List build output files
-        run: ls -R Builds/Android
+    - name: Build APK
+      run: ./gradlew assembleDebug
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: app-release.apk
-          path: Builds/Android/*.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-debug.apk
+        path: app/build/outputs/apk/debug/app-debug.apk
